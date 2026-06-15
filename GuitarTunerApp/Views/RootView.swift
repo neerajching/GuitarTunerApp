@@ -17,18 +17,11 @@ struct RootView: View {
     var body: some View {
         Group {
             if authManager.isAuthenticated {
-                ProfileView()
+                TunerView()
             } else {
                 LoginView()
             }
         }
         .animation(.easeInOut(duration: 0.3), value: authManager.isAuthenticated)
-    }
-}
-
-
-struct TunerView: View {
-    var body: some View {
-        Text("Tuner View")
     }
 }
