@@ -27,6 +27,22 @@ struct TunerView: View {
                 viewModel.requestPermission()
             }
 
+            Text("Frequency Detected")
+                .font(.headline)
+
+            if let frequency = viewModel.detectedFrequency {
+                Text("\(Int(frequency)) Hz")
+                    .font(.title)
+            } else {
+                Text("-- Hz")
+                    .font(.title)
+            }
+
+            Text("RMS Amplitude")
+                .font(.headline)
+
+            Text(String(format: "%.4f", viewModel.rms))
+            
             Button("Start Listening") {
                 viewModel.startListening()
             }
