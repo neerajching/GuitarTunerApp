@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-import SwiftUI
-
 struct TunerView: View {
 
     @State private var viewModel = TunerViewModel()
@@ -57,6 +55,10 @@ struct TunerView: View {
         }
         .padding()
     }
+}
+
+#Preview {
+    TunerView()
 }
 
 #Preview {

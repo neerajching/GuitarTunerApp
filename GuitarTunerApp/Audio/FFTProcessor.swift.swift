@@ -8,6 +8,9 @@
 
 import Accelerate
 
+
+// MARK:  takes 1024 samples → Hanning window → FFT → returns 512 magnitude bins
+
 final class FFTProcessor {
 
     private let fftSize: Int
