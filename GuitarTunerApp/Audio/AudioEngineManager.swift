@@ -7,55 +7,42 @@
 import Foundation
 import AVFoundation
 
-// MARK: -  chunks 
 struct AudioSnapshot {
     let samples: [Float]
     let sampleRate: Double
     let rms: Float
 }
 
-// MARK: - captures mic → accumulates samples → fires clean 1024-sample
-
 final class AudioEngineManager {
 
     private let audioEngine = AVAudioEngine()
-    
-//    private let fftWindowSize = 1024
-    
     private let fftWindowSize = 1024
-    private var sampleAccumulator: [Float] = [] // NEW
-   
+    private var sampleAccumulator: [Float] = []
+
     var onSnapshot: ((AudioSnapshot) -> Void)?
-    
-    func requestMicrophonePermission() {
+
+    /// Current mic permission status without prompting.
+    var currentPermissionStatus: AVAudioApplication.recordPermission {
+        AVAudioApplication.shared.recordPermission
+    }
+
+    /// Prompts the system dialog if status is undetermined. Completion always
+    /// fires on the main thread so callers can update UI state directly.
+    func requestMicrophonePermission(completion: @escaping (Bool) -> Void) {
         AVAudioApplication.requestRecordPermission { granted in
-            print("🎤 Permission granted: \(granted)")
+            DispatchQueue.main.async {
+                completion(granted)
+            }
         }
     }
 
     func start() throws {
-
-        // steps for micrpphone access related issues
-                
         let audioSession = AVAudioSession.sharedInstance()
         try audioSession.setCategory(.record, mode: .measurement, options: [])
         try audioSession.setActive(true)
-        
-        
-        //MARK: real thing from here ....
+
         let inputNode = audioEngine.inputNode
-        
-
-        print("Input Format:")
-        print(inputNode.inputFormat(forBus: 0))
-
-        print("Output Format:")
-        print(inputNode.outputFormat(forBus: 0))
-        
         let format = inputNode.outputFormat(forBus: 0)
-
-        print("Sample Rate:", format.sampleRate)
-        print("Channels:", format.channelCount)
 
         guard format.sampleRate > 0 else {
             print("❌ Invalid sample rate")
@@ -64,10 +51,9 @@ final class AudioEngineManager {
 
         inputNode.removeTap(onBus: 0)
 
-
         inputNode.installTap(
             onBus: 0,
-            bufferSize: 1024, //iOS may deliver more
+            bufferSize: 1024,
             format: format
         ) { [weak self] buffer, _ in
             self?.handleBuffer(buffer)
@@ -77,86 +63,32 @@ final class AudioEngineManager {
         try audioEngine.start()
     }
 
-    
     func stop() {
-
         audioEngine.inputNode.removeTap(onBus: 0)
         audioEngine.stop()
-
         sampleAccumulator.removeAll()
-        
-        print("🛑 Audio Engine Stopped")
     }
-    
+
     func checkMicrophonePermission() {
-
-        let permission = AVAudioSession.sharedInstance().recordPermission
-
-        print("Microphone Permission Status:", permission.rawValue)
+        print("Microphone Permission Status:", currentPermissionStatus.rawValue)
     }
-    
-    
-    private static func snapshot(from buffer: AVAudioPCMBuffer) -> AudioSnapshot? {
-        
-        
-        //MARK: channel data is array of channels
-        guard let channelData = buffer.floatChannelData else {
-            return nil
-        }
-        
-        
-        let count = Int(buffer.frameLength)
-        
-        
-        //MARK: microphone is mono so only one channel (0)
-        
-        let samples = Array(UnsafeBufferPointer(
-            start: channelData[0],
-            count: count)
-        )
-        
-        let rms = sqrt(
-            samples.map{ $0 * $0 }
-                .reduce(0, +) / Float(count)
-            
-        )
-        
-        return AudioSnapshot(samples: samples,
-                             sampleRate: buffer.format.sampleRate,
-                             rms: rms)
-        
-    }
-    
+
     private func handleBuffer(_ buffer: AVAudioPCMBuffer) {
-
-        guard let channelData = buffer.floatChannelData else {
-            return
-        }
+        guard let channelData = buffer.floatChannelData else { return }
 
         let count = Int(buffer.frameLength)
-
         let newSamples = Array(
-            UnsafeBufferPointer(
-                start: channelData[0],
-                count: count
-            )
+            UnsafeBufferPointer(start: channelData[0], count: count)
         )
 
-        // Append incoming samples to the accumulator
         sampleAccumulator.append(contentsOf: newSamples)
 
-        // Fire a snapshot every time we have ≥ 1024 samples
         while sampleAccumulator.count >= fftWindowSize {
-
-            let window = Array(
-                sampleAccumulator.prefix(fftWindowSize)
-            )
-
+            let window = Array(sampleAccumulator.prefix(fftWindowSize))
             sampleAccumulator.removeFirst(fftWindowSize)
 
             let rms = sqrt(
-                window.map { $0 * $0 }
-                    .reduce(0, +) / Float(fftWindowSize)
+                window.map { $0 * $0 }.reduce(0, +) / Float(fftWindowSize)
             )
 
             let snap = AudioSnapshot(
@@ -168,11 +100,9 @@ final class AudioEngineManager {
             onSnapshot?(snap)
         }
     }
-    
 }
 
-
-
+// MARK: TAP FIRES ON A BACKGROUND AUDIO THREAD — SWIFTUI UPDATES MUST HAPPEN ON MAIN THREAD
 //MARK: TAP FIRES ON A BACKGROUND AUDIO THREAD : SWIFT UI UPDATES SHOULD BE ON MAIN THREAD :: USE DISPATCH QUEUE MAIN ASYNC
 
 
