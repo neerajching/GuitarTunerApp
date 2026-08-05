@@ -12,7 +12,8 @@ struct ProfileView: View {
     @Environment(AuthManager.self) private var authManager
     
     var body: some View {
-        if let user = authManager.currentUser {
+        VStack{
+            if let user = authManager.currentUser {
             HStack(spacing: 12) {
                 
                 // Avatar
@@ -48,5 +49,11 @@ struct ProfileView: View {
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
             .padding(.horizontal)
         }
+            
+            Spacer()
+            
+            
+        }
+        
     }
 }

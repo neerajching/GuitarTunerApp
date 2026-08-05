@@ -55,4 +55,28 @@ enum MainTab: String, CaseIterable, Identifiable {
             return "person.crop.circle"
         }
     }
+    
+    var selectedSystemImage: String {
+        switch self {
+        case .home:
+            "house.fill"
+
+        case .tuner:
+            "waveform"
+
+        case .learn:
+            "book.closed.fill"
+
+        case .practice:
+            "music.note.list"
+
+        case .profile:
+            "person.crop.circle.fill"
+        }
+    }
+    
+    func icon(selected: Bool) -> String {
+            selected ? selectedSystemImage : systemImage
+        }
+    
 }
