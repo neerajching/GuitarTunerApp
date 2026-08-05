@@ -17,7 +17,7 @@ struct RootView: View {
     var body: some View {
         Group {
             if authManager.isAuthenticated {
-                TunerView()
+                MainTabView()
             } else {
                 LoginView()
             }
