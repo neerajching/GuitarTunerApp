@@ -17,11 +17,19 @@ struct RootView: View {
     var body: some View {
         Group {
             if authManager.isAuthenticated {
-                MainTabView()
+                AppRootView()
             } else {
                 LoginView()
             }
         }
         .animation(.easeInOut(duration: 0.3), value: authManager.isAuthenticated)
+    }
+}
+
+
+struct AppRootView: View {
+
+    var body: some View {
+        AppTabContainer()
     }
 }

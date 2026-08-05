@@ -12,6 +12,9 @@ struct TunerView: View {
     @State private var viewModel = TunerViewModel()
     @State private var manualStringIndex: Int? = nil
     @State private var glowPulse = false
+    
+    @Environment(\.bottomBarInset)
+        private var bottomBarInset
 
     private var activeIndex: Int {
         manualStringIndex ?? PitchMath.nearestStringIndex(to: viewModel.detectedFrequency ?? 0) ?? 3
@@ -69,6 +72,7 @@ struct TunerView: View {
                 tunerContent
             }
         }
+        .safeAreaPadding(.bottom, bottomBarInset)
         .onAppear { viewModel.prepareAudio() }
         .onDisappear { viewModel.stopListening() }
         .onChange(of: status) { _, newValue in
