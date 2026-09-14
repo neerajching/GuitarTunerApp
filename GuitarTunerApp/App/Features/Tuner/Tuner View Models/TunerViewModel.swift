@@ -37,12 +37,21 @@ final class TunerViewModel {
         audioManager.onSnapshot = { [weak self] snap in
             guard let self else { return }
 
-            let spectrum = self.fft.magnitudes(of: snap.samples)
-            let rawFrequency = PeakDetector.dominantFrequency(
-                in: spectrum,
+//            let spectrum = self.fft.magnitudes(of: snap.samples)
+//            
+//            let rawFrequency = PeakDetector.dominantFrequency(
+//                in: spectrum,
+//                sampleRate: snap.sampleRate,
+//                rms: snap.rms
+//            )
+            
+            let rawFrequency = PitchDetector.detect(
+                samples: snap.samples,
                 sampleRate: snap.sampleRate,
                 rms: snap.rms
             )
+            
+            
 
             let smoothed = self.smooth(rawFrequency)
             

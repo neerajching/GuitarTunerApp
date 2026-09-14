@@ -1,5 +1,5 @@
 //
-//  PitchDetector.swift
+//  PeakDetector.swift
 //  GuitarTunerApp
 //
 //  Created by Negi on 19/07/26.
