@@ -18,7 +18,7 @@ enum MicPermissionState {
 final class TunerViewModel {
 
     private let audioManager = AudioEngineManager()
-    private let fft = FFTProcessor(fftSize: 1024)
+    private let fft = FFTProcessor(fftSize: 1024)  // not using this now 
 
     var rms: Float = 0
     var isListening = false
@@ -57,7 +57,10 @@ final class TunerViewModel {
             
             let rawStr = rawFrequency.map { String(format: "%.1f", $0) } ?? "nil"
             let smoothStr = smoothed.map { String(format: "%.1f", $0) } ?? "nil"
-            print("🎵 raw: \(rawStr) smoothed: \(smoothStr)")
+            if rawStr != "nil" {
+                print("🎵 raw: \(rawStr) smoothed: \(smoothStr)")
+            }
+            
             
             DispatchQueue.main.async {
                 self.rms = snap.rms

@@ -16,7 +16,9 @@ struct AudioSnapshot {
 final class AudioEngineManager {
 
     private let audioEngine = AVAudioEngine()
-    private let fftWindowSize = 1024
+    private let analysisWindow = 4096
+    private let hopSize = 2048
+    
     private var sampleAccumulator: [Float] = []
 
     var onSnapshot: ((AudioSnapshot) -> Void)?
@@ -83,12 +85,12 @@ final class AudioEngineManager {
 
         sampleAccumulator.append(contentsOf: newSamples)
 
-        while sampleAccumulator.count >= fftWindowSize {
-            let window = Array(sampleAccumulator.prefix(fftWindowSize))
-            sampleAccumulator.removeFirst(fftWindowSize)
+        while sampleAccumulator.count >= analysisWindow {
+            let window = Array(sampleAccumulator.prefix(analysisWindow))
+            sampleAccumulator.removeFirst(hopSize)
 
             let rms = sqrt(
-                window.map { $0 * $0 }.reduce(0, +) / Float(fftWindowSize)
+                window.map { $0 * $0 }.reduce(0, +) / Float(analysisWindow)
             )
 
             let snap = AudioSnapshot(
