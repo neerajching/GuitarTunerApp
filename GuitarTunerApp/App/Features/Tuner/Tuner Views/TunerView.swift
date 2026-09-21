@@ -73,8 +73,12 @@ struct TunerView: View {
             }
         }
         .safeAreaPadding(.bottom, bottomBarInset)
-//        .onAppear { viewModel.prepareAudio() }
-        .onDisappear { viewModel.stopListening() }
+        .onAppear {
+            viewModel.prepareAudio()
+        }
+        .onDisappear {
+            viewModel.stopListening()
+        }
         .onChange(of: status) { _, newValue in
             if newValue == .inTune {
                 withAnimation(.easeInOut(duration: 0.8).repeatCount(3, autoreverses: true)) {
