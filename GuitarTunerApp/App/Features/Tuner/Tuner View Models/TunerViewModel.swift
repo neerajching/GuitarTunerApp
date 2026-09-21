@@ -45,12 +45,13 @@ final class TunerViewModel {
 //                rms: snap.rms
 //            )
             
+            
+            // this is expensive process running on auidio callback 
             let rawFrequency = PitchDetector.detect(
                 samples: snap.samples,
                 sampleRate: snap.sampleRate,
                 rms: snap.rms
             )
-            
             
 
             let smoothed = self.smooth(rawFrequency)
@@ -60,7 +61,6 @@ final class TunerViewModel {
             if rawStr != "nil" {
                 print("🎵 raw: \(rawStr) smoothed: \(smoothStr)")
             }
-            
             
             DispatchQueue.main.async {
                 self.rms = snap.rms
